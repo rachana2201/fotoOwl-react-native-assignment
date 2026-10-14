@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "Picsum Gallery",
+    "slug": "picsum-gallery",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.example.picsumgallery"
+    },
+    "android": {
+      "package": "com.example.picsumgallery",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.READ_MEDIA_IMAGES"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-image",
+      [
+        "expo-media-library",
+        {
+          "savePhotosPermission": "Allow Picsum Gallery to save images to your photo library.",
+          "photosPermission": false,
+          "granularPermissions": [
+            "photo"
+          ]
+        }
+      ],
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "bc5ce1bc-ff56-4e65-946d-52db195b6cbd"
+      }
+    }
+  }
+}
