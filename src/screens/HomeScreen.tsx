@@ -1,41 +1,90 @@
-import { useCallback } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, ScrollView, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Chip } from '../components/Chip';
-import { ImageCard } from '../components/ImageCard';
-import { SearchBar } from '../components/SearchBar';
-import { LoadingView, MessageView } from '../components/StateView';
-import { FILTER_OPTIONS, SORT_LABELS } from '../constants';
-import { useGallery } from '../hooks/useGallery';
-import { useTheme, useThemedStyles } from '../hooks/useTheme';
-import type { RootStackParamList } from '../navigation/types';
-import { useFavoritesStore } from '../store/favoritesStore';
-import type { Colors } from '../theme';
-import type { ImageItem } from '../types';
+import { useCallback, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
+import { useNavigation, useScrollToTop } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Chip } from "../components/Chip";
+import { ImageCard } from "../components/ImageCard";
+import { SearchBar } from "../components/SearchBar";
+import { LoadingView, MessageView } from "../components/StateView";
+import { DownloadFeedbackModal } from "../components/DownloadFeedbackModal";
+import { FILTER_OPTIONS, SORT_LABELS } from "../constants";
+import { useGallery } from "../hooks/useGallery";
+import { useTheme, useThemedStyles } from "../hooks/useTheme";
+import type { RootStackParamList } from "../navigation/types";
+import { useFavoritesStore } from "../store/favoritesStore";
+import type { Colors } from "../theme";
+import type { ImageItem } from "../types";
 
 const factory = (c: Colors) => ({
   container: { flex: 1, backgroundColor: c.background },
-  controls: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4, gap: 10 },
+  controls: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 4,
+    gap: 10,
+  },
   chips: { gap: 8, paddingRight: 8 },
   count: { color: c.textMuted, fontSize: 12, marginTop: 2 },
-  list: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 24, flexGrow: 1 },
+  list: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 24,
+    flexGrow: 1,
+  },
   footer: { paddingVertical: 16 },
-  banner: { backgroundColor: c.danger + '20', padding: 10, marginHorizontal: 16, borderRadius: 10, marginTop: 6 },
+  banner: {
+    backgroundColor: c.danger + "20",
+    padding: 10,
+    marginHorizontal: 16,
+    borderRadius: 10,
+    marginTop: 6,
+  },
   bannerText: { color: c.danger, fontSize: 13 },
 });
 
 export default function HomeScreen() {
   const styles = useThemedStyles(factory);
   const { colors } = useTheme();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  const listRef = useRef<FlatList<ImageItem>>(null);
+  useScrollToTop(listRef);
 
   const g = useGallery();
   const favoriteIds = useFavoritesStore((s) => s.ids);
   const toggleFavorite = useFavoritesStore((s) => s.toggle);
 
+  const [favoriteFeedback, setFavoriteFeedback] = useState<{
+    title: string;
+    message: string;
+  } | null>(null);
+
+  const handleToggleFavorite = useCallback(
+    (image: ImageItem) => {
+      const wasFavorite = !!favoriteIds[image.id];
+
+      toggleFavorite(image);
+
+      setFavoriteFeedback({
+        title: wasFavorite ? "Removed from Favorites" : "Added to Favorites",
+        message: wasFavorite
+          ? `${image.author}'s photo has been removed from your favorites.`
+          : `${image.author}'s photo has been saved to your favorites.`,
+      });
+    },
+    [favoriteIds, toggleFavorite],
+  );
+
   const openDetails = useCallback(
-    (image: ImageItem) => navigation.navigate('Details', { image }),
+    (image: ImageItem) => navigation.navigate("Details", { image }),
     [navigation],
   );
 
@@ -45,10 +94,10 @@ export default function HomeScreen() {
         image={item}
         isFavorite={!!favoriteIds[item.id]}
         onPress={openDetails}
-        onToggleFavorite={toggleFavorite}
+        onToggleFavorite={handleToggleFavorite}
       />
     ),
-    [favoriteIds, openDetails, toggleFavorite],
+    [favoriteIds, openDetails, handleToggleFavorite],
   );
 
   if (g.loading) return <LoadingView message="Loading images…" />;
@@ -65,21 +114,38 @@ export default function HomeScreen() {
     );
   }
 
-  const isFiltering = g.debouncedSearch.trim() !== '' || g.filter !== 'all';
+  const isFiltering = g.debouncedSearch.trim() !== "" || g.filter !== "all";
 
   return (
     <View style={styles.container}>
       <View style={styles.controls}>
         <SearchBar value={g.search} onChangeText={g.setSearch} />
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} keyboardShouldPersistTaps="handled">
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chips}
+          keyboardShouldPersistTaps="handled"
+        >
           {FILTER_OPTIONS.map((opt) => (
-            <Chip key={opt.value} label={opt.label} selected={g.filter === opt.value} onPress={() => g.setFilter(opt.value)} />
+            <Chip
+              key={opt.value}
+              label={opt.label}
+              selected={g.filter === opt.value}
+              onPress={() => g.setFilter(opt.value)}
+            />
           ))}
-          <Chip label={SORT_LABELS[g.sort]} selected={g.sort !== 'default'} onPress={g.cycleSort} />
+
+          <Chip
+            label={SORT_LABELS[g.sort]}
+            selected={g.sort !== "default"}
+            onPress={g.cycleSort}
+          />
         </ScrollView>
+
         <Text style={styles.count}>
           Showing {g.visible.length} of {g.total}
-          {g.hasMore ? '+' : ''} images
+          {g.hasMore ? "+" : ""} images
         </Text>
       </View>
 
@@ -90,6 +156,7 @@ export default function HomeScreen() {
       )}
 
       <FlatList
+        ref={listRef}
         data={g.visible}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
@@ -99,7 +166,12 @@ export default function HomeScreen() {
         onEndReached={g.onEndReached}
         onEndReachedThreshold={0.5}
         refreshControl={
-          <RefreshControl refreshing={g.refreshing} onRefresh={g.refresh} tintColor={colors.primary} colors={[colors.primary]} />
+          <RefreshControl
+            refreshing={g.refreshing}
+            onRefresh={g.refresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
         }
         ListFooterComponent={
           g.loadingMore ? (
@@ -112,13 +184,25 @@ export default function HomeScreen() {
           <MessageView
             icon="search-outline"
             title="No images found"
-            message={isFiltering ? 'Try a different author name or filter.' : 'Pull down to refresh.'}
+            message={
+              isFiltering
+                ? "Try a different author name or filter."
+                : "Pull down to refresh."
+            }
           />
         }
         initialNumToRender={6}
         maxToRenderPerBatch={6}
         windowSize={7}
         removeClippedSubviews
+      />
+
+      <DownloadFeedbackModal
+        visible={favoriteFeedback !== null}
+        type="success"
+        title={favoriteFeedback?.title ?? ""}
+        message={favoriteFeedback?.message ?? ""}
+        onClose={() => setFavoriteFeedback(null)}
       />
     </View>
   );

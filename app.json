@@ -1,22 +1,22 @@
 {
   "expo": {
-    "name": "Picsum Gallery",
+    "name": "Picsum",
     "slug": "picsum-gallery",
     "version": "1.0.0",
     "orientation": "portrait",
+
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.example.picsumgallery"
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#5BADFF"
     },
     "android": {
-      "package": "com.example.picsumgallery",
+      "package": "com.example.picsum",
+
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#5BADFF",
+        "foregroundImage": "./assets/android-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false,
       "permissions": [
@@ -34,11 +34,9 @@
       [
         "expo-media-library",
         {
-          "savePhotosPermission": "Allow Picsum Gallery to save images to your photo library.",
+          "savePhotosPermission": "Allow Picsum to sve images to your photo library.",
           "photosPermission": false,
-          "granularPermissions": [
-            "photo"
-          ]
+          "granularPermissions": ["photo"]
         }
       ],
       "expo-font"

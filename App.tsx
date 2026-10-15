@@ -1,11 +1,10 @@
-import { useEffect } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { useTheme } from './src/hooks/useTheme';
-import RootNavigator from './src/navigation/RootNavigator';
-import { useAuthStore } from './src/store/authStore';
-import { useThemeStore } from './src/store/themeStore';
-
+import { useEffect } from "react";
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useTheme } from "./src/hooks/useTheme";
+import RootNavigator from "./src/navigation/RootNavigator";
+import { useAuthStore } from "./src/store/authStore";
+import { useThemeStore } from "./src/store/themeStore";
 export default function App() {
   const hydrateAuth = useAuthStore((s) => s.hydrate);
   const hydrateTheme = useThemeStore((s) => s.hydrate);
@@ -18,9 +17,9 @@ export default function App() {
   }, [hydrateAuth, hydrateTheme]);
 
   return (
-    <SafeAreaProvider>
-      <StatusBar style={isDark ? 'light' : 'dark'} />
-      <RootNavigator />
-    </SafeAreaProvider>
-  );
+  <SafeAreaProvider>
+    <StatusBar style={isDark ? 'light' : 'dark'} />
+    <RootNavigator />
+  </SafeAreaProvider>
+);
 }
